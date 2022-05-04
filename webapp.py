@@ -3,17 +3,15 @@ from flask_oauthlib.client import OAuth
 #from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
 from flask import render_template
 
-import pprint
+import pymongo
 import os
+import sys
+import pprint
 
-# This code originally from https://github.com/lepture/flask-oauthlib/blob/master/example/github.py
-# Edited by P. Conrad for SPIS 2016 to add getting Client Id and Secret from
-# environment variables, so that this will work on Heroku.
-# Edited by S. Adams for Designing Software for the Web to add comments and remove flash messaging
 
 app = Flask(__name__)
 
-app.debug = False #Change this to False for production
+app.debug = True #Change this to False for production
 #os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #Remove once done debugging
 
 app.secret_key = os.environ['SECRET_KEY'] #used to sign session cookies
@@ -33,10 +31,15 @@ github = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize' #URL for github's OAuth login
 )
 
+# Connect to MongoDB
+connection_string = os.environ["MONGO_CONNECTION_STRING"]
+db_name = os.environ["MONGO_DBNAME"]
 
-#context processors run before templates are rendered and add variable(s) to the template's context
-#context processors must return a dictionary 
-#this context processor adds the variable logged_in to the conext for all templates
+client = pymongo.MongoClient(connection_string)
+db = client[db_name]
+collection = db['col-1'] #1. put the name of your collection in the quotes
+
+
 @app.context_processor
 def inject_logged_in():
     return {"logged_in":('github_token' in session)}
@@ -91,7 +94,6 @@ def renderPage2():
 def render_google_verification():
     return render_template('googleb4c3aeedcc2dd103.html')
 
-#the tokengetter is automatically called to check who is logged in.
 @github.tokengetter
 def get_github_oauth_token():
     return session['github_token']
