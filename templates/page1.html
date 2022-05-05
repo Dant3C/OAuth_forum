@@ -3,9 +3,17 @@
 {% block title %}page1{% endblock %}
 
 {% block content %}
-  <h1>This is Page 1</h1>
+	<h1>This is Page 1</h1>
+	
+	<form action="/page1">
+		<label for="post">Type something:</label> <br>
+		<input type="text" name="post" required></input>
+		
+		<input type="submit"></input>
+	</form>
 
-<p>Lorem ipsum sit dolor amet.</p>
+	<p>{{ username1 }} <br> {{ user_post1 }}</p>
+  
 
 <pre>
 {{ dump_user_data }}

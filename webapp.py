@@ -1,6 +1,6 @@
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_oauthlib.client import OAuth
-#from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
+from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
 from flask import render_template
 
 import pymongo
@@ -8,11 +8,10 @@ import os
 import sys
 import pprint
 
-
 app = Flask(__name__)
 
 app.debug = True #Change this to False for production
-#os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #Remove once done debugging
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #Remove once done debugging
 
 app.secret_key = os.environ['SECRET_KEY'] #used to sign session cookies
 oauth = OAuth(app)
@@ -51,7 +50,7 @@ def home():
 #redirect to GitHub's OAuth page and confirm callback URL
 @app.route('/login')
 def login():   
-    return github.authorize(callback=url_for('authorized', _external=True, _scheme='https')) #callback URL must match the pre-configured callback URL
+    return github.authorize(callback=url_for('authorized', _external=True, _scheme='http')) #set as "https" for final version
 
 @app.route('/logout')
 def logout():
@@ -76,15 +75,20 @@ def authorized():
             print(inst)
             message='Unable to login, please try again.  '
     return render_template('message.html', message=message)
-
+    
 
 @app.route('/page1')
 def renderPage1():
-    if 'user_data' in session:
-        user_data_pprint = pprint.pformat(session['user_data'])#format the user data nicely
-    else:
-        user_data_pprint = '';
-    return render_template('page1.html',dump_user_data=user_data_pprint)
+    return render_template('page1.html')
+    
+def get_post():
+    user_post = request.args['post']
+    document = {'username': 'User', 'post': user_post}
+    return document
+    
+def add_post(doc):
+    collection.insert_one(doc)
+        
 
 @app.route('/page2')
 def renderPage2():
