@@ -3,5 +3,28 @@ body {
 }
 
 #content {
-     margin-left: 20px;
+    margin: auto;
+    font-family: Didot;
+    
 }
+
+#homeheader{
+    text-align: left;
+    margin-left: 20px;
+}
+
+.homep{
+    text-align: left;
+    margin-left: 20px;
+}
+
+#forumheader{
+    text-align: center;
+}
+
+#forump{
+    text-align: center;
+    border: 1px solid black;
+    width: 50%;
+}
+    
