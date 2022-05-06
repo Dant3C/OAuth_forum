@@ -3,18 +3,17 @@
 {% block title %}page1{% endblock %}
 
 {% block content %}
-	<h1>This is Page 1</h1>
-	
+	<h1 id="forumheader">Forum Name</h1>
+
+	<p id="forump">Please be respectful and keep your posts on topic!</p>
+
 	<form action="/page1">
-		<label for="post">Type something:</label> <br>
+		<label for="post">Type something!</label> <br>
 		<input type="text" name="post" required></input>
 		
 		<input type="submit"></input>
 	</form>
-
-	<p>{{ username1 }} <br> {{ user_post1 }}</p>
-  
-
+	
 <pre>
 {{ dump_user_data }}
 </pre>

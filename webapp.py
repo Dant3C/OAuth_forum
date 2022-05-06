@@ -88,11 +88,6 @@ def get_post():
     
 def add_post(doc):
     collection.insert_one(doc)
-        
-
-@app.route('/page2')
-def renderPage2():
-    return render_template('page2.html')
 
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
