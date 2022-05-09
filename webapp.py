@@ -79,15 +79,19 @@ def authorized():
 
 @app.route('/page1')
 def renderPage1():
-    return render_template('page1.html')
+    return render_template('page1.html', post = get_post_from_db())
     
-def get_post():
+def submit_post(): # Get user's post and add it to the db
     user_post = request.args['post']
-    document = {'username': 'User', 'post': user_post}
+    document = {'username': session['user_data']['login'], 'post': user_post}    
+    collection.insert_one(document)
     return document
     
-def add_post(doc):
-    collection.insert_one(doc)
+def get_post_from_db():
+    doc = collection.find_one({ "user": "username1" }, { "_id": 0, "user": 1, "post": 1 })
+    post = doc["post"]
+    print(post)
+    return post
 
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
