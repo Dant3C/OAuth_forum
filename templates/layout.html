@@ -21,9 +21,25 @@
   </head>
   <body>
 	{% include 'navbar.html' %}
+        {% with messages = get_flashed_messages(with_categories=true) %} 
+          {% if messages %}
+             {% for category, message in messages %}
+                {% if category == "message" %}
+                  {% set cls = "alert alert-success alert-dismissible" %}
+                {% elif category == "error" %}
+                  {% set cls = "alert alert-danger alert-dismissible" %}
+                {% endif %}
+                <div class="{{ cls }}">
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  {{ message }}
+                </div>
+             {% endfor %}
+          {% endif %}
+        {% endwith %}
 
 	<div id="content">
-		{% block content %}{% endblock %}
+    {% block content %}
+    {% endblock %}
 	</div>
 
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
