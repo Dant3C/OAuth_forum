@@ -7,12 +7,42 @@
 
 	<p id="forump">Please be respectful and keep your posts on topic!</p>
 
-	<form action="/page1">
-		<label for="post">Type something!</label> <br>
-		<input type="text" name="post" required></input>
+	<form action="/submitted" method="post">
+		<label for="post_text">Type something!</label> <br>
+		<textarea name="post_text" id="editor" required></input>
+		</textarea>
+		
+		<!-- Text editor that adds basic editing options : bold, italicize, embed link, bulleted/numbered lists, insert image(remove probably), quote, undo/redo buttons -->
+		<script>
+			ClassicEditor
+				.create( document.querySelector( '#editor' ) )
+				.catch( error => {
+					console.error( error );
+				} );
+		</script>
 		
 		<input type="submit"></input>
 	</form>
+
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<h1>All posts</h1>
+			<table class="table table-bordered table-striped">
+				<caption>Caption</caption>
+				<!-- <thead>
+					<tr>
+						<th>
+							Username
+						</th>
+						<th>
+							Message
+						</th>
+					</tr>
+				</thead> -->
+			</table>
+		</div>
+	</div>
+	
 	
 <pre>
 {{ dump_user_data }}
