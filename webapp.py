@@ -77,19 +77,22 @@ def authorized():
             flash('Unable to login, please try again.', 'error')
     return redirect('/')
     
-
+@app.route('/submitted', methods=['POST', 'GET'])
+def submit_post():
+    username = str(session['user_data']['login'])
+    post_text = request.form['post_text']
+    document = {'username': username, 'post_text': post_text}  
+    try:
+        collection.insert_one(document)
+    except Exception as e:
+        print("Can't post, try again. error: ", e)
+    return render_template('page1.html')
+    
+    
 @app.route('/page1')
 def renderPage1():
     return render_template('page1.html')
     
-def get_post():
-    user_post = request.args['post']
-    document = {'username': 'User', 'post': user_post}
-    return document
-    
-def add_post(doc):
-    collection.insert_one(doc)
-
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
     return render_template('googleb4c3aeedcc2dd103.html')
@@ -98,6 +101,27 @@ def render_google_verification():
 def get_github_oauth_token():
     return session['github_token']
 
+#				<thead>
+#					<tr>
+#						<th>
+#							Username
+#						</th>
+#						<th>
+#							Message
+#						</th>
+#					</tr>
+#				</thead>
+ 
+#This will add posts to the html page
+
+def get_all_posts():
+    username = ""
+    post = ""
+    id = ""
+    for document in collection.find():
+        username = 
+        post = 
+        posts = Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
 
 if __name__ == '__main__':
     app.run()
