@@ -79,31 +79,22 @@ def authorized():
     
 @app.route('/submitted', methods=['POST', 'GET'])
 def submit_post():
-    username = str(session['user_data']['login'])
-    post_text = request.form['post_text']
-    document = {'username': username, 'post_text': post_text}  
-    try:
-        collection.insert_one(document)
-    except Exception as e:
-        print("Can't post, try again. error: ", e)
+    if 'user_data' in session:
+        username = str(session['user_data']['login'])
+        post_text = request.form['post_text']
+        document = {'username': username, 'post_text': post_text}  
+        try:
+            collection.insert_one(document)
+        except Exception as e:
+            print("Can't post, try again. error: ", e)
+    else:
+        flash('You must be logged in to post.')
     return render_template('page1.html', posts = get_all_posts())
-    
-def get_all_posts():
-    username = ""
-    post = ""
-    id = ""
-    posts = ""
-    for document in collection.find():
-        username = document['username']
-        post = document['post_text']
-        id = document['_id']
-        posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
-    return posts
-    
+
     
 @app.route('/page1')
 def renderPage1():
-    return render_template('page1.html')
+    return render_template('page1.html', posts = get_all_posts())
     
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
@@ -123,6 +114,18 @@ def get_github_oauth_token():
 #						</th>
 #					</tr>
 #				</thead>
+
+def get_all_posts():
+    username = ""
+    post = ""
+    id = ""
+    posts = ""
+    for document in collection.find():
+        username = document['username']
+        post = document['post_text']
+        id = document['_id']
+        posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+    return posts
 
 if __name__ == '__main__':
     app.run()
