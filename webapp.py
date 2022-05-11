@@ -111,10 +111,16 @@ def get_github_oauth_token():
 #					</tr>
 #				</thead>
  
-#This will add posts (WIP) 
+#This will add posts to the html page
 
-# def all_posts():
-    # post = Markup("<thead> <tr> <th> {{ username }} </th> <th> {{ post_text }} </th> </tr> </thead>")
+def get_all_posts():
+    username = ""
+    post = ""
+    id = ""
+    for document in collection.find():
+        username = 
+        post = 
+        posts = Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
 
 if __name__ == '__main__':
     app.run()
