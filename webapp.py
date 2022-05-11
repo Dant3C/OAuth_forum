@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session, request, jsonify, render_template, flash
+from flask import Flask, redirect, url_for, session, request, jsonify, render_template, flash, Markup
 from flask_oauthlib.client import OAuth
 from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
 from flask import render_template
@@ -86,7 +86,19 @@ def submit_post():
         collection.insert_one(document)
     except Exception as e:
         print("Can't post, try again. error: ", e)
-    return render_template('page1.html')
+    return render_template('page1.html', posts = get_all_posts())
+    
+def get_all_posts():
+    username = ""
+    post = ""
+    id = ""
+    posts = ""
+    for document in collection.find():
+        username = document['username']
+        post = document['post_text']
+        id = document['_id']
+        posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+    return posts
     
     
 @app.route('/page1')
@@ -111,17 +123,6 @@ def get_github_oauth_token():
 #						</th>
 #					</tr>
 #				</thead>
- 
-#This will add posts to the html page
-
-def get_all_posts():
-    username = ""
-    post = ""
-    id = ""
-    for document in collection.find():
-        username = 
-        post = 
-        posts = Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
 
 if __name__ == '__main__':
     app.run()
