@@ -91,6 +91,31 @@ def submit_post():
         flash('You must be logged in to post.')
     return render_template('page1.html', posts = get_all_posts())
 
+@app.route('/search')
+def filter_posts():
+    query = request.args['search_query']
+    option = request.args['option']
+    username = ""
+    post = ""
+    id = ""
+    filtered_posts = ""
+    # If search by username is selected, search for all documents tagged with the username
+    if option == "username":
+        for document in collection.find({'username': {"$regex" : query, '$options' : 'i'}}):
+            username = document['username']
+            post = document['post_text']
+            id = document['_id']
+            filtered_posts = filtered_posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+        return render_template('page1.html', posts = filtered_posts)
+    elif option == "text":
+        for document in collection.find({"post_text" : {"$regex" : query, '$options' : 'i'}}):
+            username = document['username']
+            post = document['post_text']
+            id = document['_id']
+            filtered_posts = filtered_posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+        return render_template('page1.html', posts = filtered_posts)
+    else:
+        return render_template('page1.html', posts = get_all_posts())
     
 @app.route('/page1')
 def renderPage1():

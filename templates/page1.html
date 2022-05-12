@@ -23,6 +23,21 @@
 		
 		<input type="submit"></input>
 	</form>
+	
+	<br>
+	
+	<form action="/search">
+		<label for="search_query">Search for:</label> <br>
+		<input type="text" name="search_query" required></input>
+		
+		<input type="radio" id="for_username" name="option" value="username" required>
+		<label for="for_username"> Username</label>
+		<input type="radio" id="for_keyword" name="option" value="text" required>
+		<label for="for_keyword"> Keyword</label><br>
+		
+		<input type="submit" value="Search">
+	</form>
+	
 
 	<div class="container-fluid">
 		<div class="row-fluid">
