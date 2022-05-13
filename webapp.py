@@ -2,6 +2,7 @@ from flask import Flask, redirect, url_for, session, request, jsonify, render_te
 from flask_oauthlib.client import OAuth
 from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
 from flask import render_template
+from datetime import datetime
 
 import pymongo
 import os
@@ -82,7 +83,12 @@ def submit_post():
     if 'user_data' in session:
         username = str(session['user_data']['login'])
         post_text = request.form['post_text']
-        document = {'username': username, 'post_text': post_text}  
+        now = datetime.now()
+        date_time = now.strftime("%d/%m/%Y %H:%M:%S")
+        # Datetime is a string in the format MM/DD/YEAR hh/mm/ss; 
+        # 'post_level' refers to the hierarchy of posts/replies '0' refers to a parent post, 1 would be a reply to the parent, 2 would be a reply to that reply, etc. etc.
+        # Use 'post_level' and the unique _id of each document to figure out how much to 'indent' the posts, also use the date and time to order them correctly
+        document = {'username': username, 'post_text': post_text, 'date_time': date_time, 'post_level': 0}  
         try:
             collection.insert_one(document)
         except Exception as e:
@@ -116,6 +122,11 @@ def filter_posts():
         return render_template('page1.html', posts = filtered_posts)
     else:
         return render_template('page1.html', posts = get_all_posts())
+    
+
+@app.route('/clearSearch')
+def clear_filter():
+    return render_template('page1.html', posts = get_all_posts())
     
 @app.route('/page1')
 def renderPage1():

@@ -9,7 +9,7 @@
 
 	<form action="/submitted" method="post">
 		<label for="post_text">Type something!</label> <br>
-		<textarea name="post_text" id="editor" required></input>
+		<textarea name="post_text" id="editor" required>
 		</textarea>
 		
 		<!-- Text editor that adds basic editing options : bold, italicize, embed link, bulleted/numbered lists, insert image(remove probably), quote, undo/redo buttons -->
@@ -38,6 +38,9 @@
 		<input type="submit" value="Search">
 	</form>
 	
+	<form action="/clearSearch">
+		<input type="submit" value="Clear Search">
+	</form>
 
 	<div class="container-fluid">
 		<div class="row-fluid">
