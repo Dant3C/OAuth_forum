@@ -1,48 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-    <!-- Bootstrap -->
+		<!-- Bootstrap -->
 
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-  
-  <!-- Text editor for text area -->
-  <script src="https://cdn.ckeditor.com/ckeditor5/11.0.1/classic/ckeditor.js"></script>
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <title>{% block title %}{% endblock %} - My Webpage</title>
+		<!-- Text editor for text area -->
+		<script src="https://cdn.ckeditor.com/ckeditor5/11.0.1/classic/ckeditor.js"></script>
+
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+		<script src="../static/script.js"></script>
+		<title>{% block title %}{% endblock %} - My Webpage</title>
 
 
-  </head>
-  <body>
+	</head>
+	<body>
 	{% include 'navbar.html' %}
-        {% with messages = get_flashed_messages(with_categories=true) %} 
-          {% if messages %}
-             {% for category, message in messages %}
-                {% if category == "message" %}
-                  {% set cls = "alert alert-success alert-dismissible" %}
-                {% elif category == "error" %}
-                  {% set cls = "alert alert-danger alert-dismissible" %}
-                {% endif %}
-                <div class="{{ cls }}">
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  {{ message }}
-                </div>
-             {% endfor %}
-          {% endif %}
-        {% endwith %}
+		{% with messages = get_flashed_messages(with_categories=true) %} 
+		  {% if messages %}
+			 {% for category, message in messages %}
+				{% if category == "message" %}
+				  {% set cls = "alert alert-success alert-dismissible" %}
+				{% elif category == "error" %}
+				  {% set cls = "alert alert-danger alert-dismissible" %}
+				{% endif %}
+				<div class="{{ cls }}">
+				  <button type="button" class="close" data-dismiss="alert">&times;</button>
+				  {{ message }}
+				</div>
+			 {% endfor %}
+		  {% endif %}
+		{% endwith %}
 
 	<div id="content">
-    {% block content %}
-    {% endblock %}
+	{% block content %}
+	{% endblock %}
 	</div>
 
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -51,7 +52,7 @@
 
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  </body>
+	</body>
 </html>
 
 
