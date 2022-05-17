@@ -151,6 +151,19 @@ def get_github_oauth_token():
 #					</tr>
 #				</thead>
 
+# <form action="/reply" method="post" id="reply">
+    # <label for="reply_text">Type your reply!</label> <br>
+    # <textarea name="reply_text" id="reply_editor" required></textarea>    
+    # <script>
+        # ClassicEditor
+            # .create( document.querySelector( '#reply_editor' ) )
+            # .catch( error => {
+                # console.error( error );
+            # } );
+    # </script>
+    # <input type="submit" value="Reply"></input>
+# </form>
+
 def get_all_posts():
     username = ""
     post = ""
