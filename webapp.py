@@ -128,6 +128,10 @@ def filter_posts():
 def clear_filter():
     return render_template('page1.html', posts = get_all_posts())
     
+# @app.route('/reply')
+# def add_reply():
+    
+    
 @app.route('/page1')
 def renderPage1():
     return render_template('page1.html', posts = get_all_posts())
@@ -164,16 +168,22 @@ def get_github_oauth_token():
     # <input type="submit" value="Reply"></input>
 # </form>
 
+#<script> ClassicEditor.create( document.querySelector( '#reply_editor' ) ).catch( error => { console.error( error )} ); </script>
+
 def get_all_posts():
     username = ""
     post = ""
     id = ""
     posts = ""
+    reply_form = ""
+    count = 0
     for document in collection.find():
+        count = count + 1
         username = document['username']
         post = document['post_text']
         id = document['_id']
-        posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+        reply_form = "<form action='/reply' method='post' id='reply" + str(count) + "'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text" + str(count) + "' id='reply_editor' required></textarea> <input type='submit' value='Reply'></input> </form>"
+        posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> <th> " + reply_form + " </th> </tr> </thead>")
     return posts
 
 if __name__ == '__main__':

@@ -8,6 +8,10 @@ body {
     
 }
 
+.replyForm {
+	display: none;
+}
+
 #homeheader{
     text-align: left;
     margin-left: 20px;
