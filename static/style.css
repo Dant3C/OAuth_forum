@@ -9,7 +9,7 @@ body {
 }
 
 .replyForm {
-	display: none;
+	display: block;
 }
 
 #homeheader{

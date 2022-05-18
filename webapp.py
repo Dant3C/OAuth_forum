@@ -95,7 +95,7 @@ def submit_post():
             print("Can't post, try again. error: ", e)
     else:
         flash('You must be logged in to post.')
-    return render_template('page1.html', posts = get_all_posts())
+    return render_template('page1.html', posts = format_all_posts())
 
 @app.route('/search')
 def filter_posts():
@@ -121,20 +121,36 @@ def filter_posts():
             filtered_posts = filtered_posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
         return render_template('page1.html', posts = filtered_posts)
     else:
-        return render_template('page1.html', posts = get_all_posts())
+        return render_template('page1.html', posts = format_all_posts())
     
 
 @app.route('/clearSearch')
 def clear_filter():
-    return render_template('page1.html', posts = get_all_posts())
+    return render_template('page1.html', posts = format_all_posts())
     
-# @app.route('/reply')
-# def add_reply():
+@app.route('/reply')
+def add_reply():
+    if 'user_data' in session:
+        username = str(session['user_data']['login'])
+        # parent_level should be the post you're replying to's post_level, parent_id should be the _id of the parent post/reply
+        # parent_level = 
+        # parent_id = 
+        reply_text = request.form['reply_text']
+        now = datetime.now()
+        date_time = now.strftime("%d/%m/%Y %H:%M:%S")
+        document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': parent_level + 1, parent_id: }  
+        try:
+            collection.insert_one(document)
+        except Exception as e:
+            print("Can't post, try again. error: ", e)
+    else:
+        flash('You must be logged in to post.')
+    return render_template('page1.html', posts = format_all_posts())
     
     
 @app.route('/page1')
 def renderPage1():
-    return render_template('page1.html', posts = get_all_posts())
+    return render_template('page1.html', posts = format_all_posts())
     
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
@@ -170,7 +186,7 @@ def get_github_oauth_token():
 
 #<script> ClassicEditor.create( document.querySelector( '#reply_editor' ) ).catch( error => { console.error( error )} ); </script>
 
-def get_all_posts():
+def format_all_posts():
     username = ""
     post = ""
     id = ""
@@ -182,7 +198,7 @@ def get_all_posts():
         username = document['username']
         post = document['post_text']
         id = document['_id']
-        reply_form = "<form action='/reply' method='post' id='reply" + str(count) + "'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text" + str(count) + "' id='reply_editor' required></textarea> <input type='submit' value='Reply'></input> </form>"
+        reply_form = "<button type='button' id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' required></textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='submit'></input> </form>"
         posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> <th> " + reply_form + " </th> </tr> </thead>")
     return posts
 

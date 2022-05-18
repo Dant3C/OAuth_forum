@@ -1,8 +1,12 @@
 $(document).ready(function() {
 	var rowCount = $('#posts tr').length;
-	for(int i = 1, i < rowCount, i++)
-		function showReply() {
-			document.getElementById('reply' + i).style.display = 'block';
-		}
+	for(int i = 1, i < 3, i++) {
+		$("#rButton"+n).click(function() {
+			showReply(i):
+		});
+	}
+	
+	function showReply(num) {
+		document.getElementById('reply' + num).style.display = 'block';
 	}
 }
