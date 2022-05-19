@@ -3,6 +3,7 @@ from flask_oauthlib.client import OAuth
 from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
 from flask import render_template
 from datetime import datetime
+from bson import ObjectId
 
 import pymongo
 import os
@@ -128,17 +129,17 @@ def filter_posts():
 def clear_filter():
     return render_template('page1.html', posts = format_all_posts())
     
-@app.route('/reply')
+@app.route('/reply', methods=['POST', 'GET'])
 def add_reply():
     if 'user_data' in session:
         username = str(session['user_data']['login'])
         # parent_level should be the post you're replying to's post_level, parent_id should be the _id of the parent post/reply
-        # parent_level = 
-        # parent_id = 
+        parent_level = request.form['post_level']
+        parent_id = request.form['parent_id']
         reply_text = request.form['reply_text']
         now = datetime.now()
         date_time = now.strftime("%d/%m/%Y %H:%M:%S")
-        document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': parent_level + 1, parent_id: }  
+        document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1, 'parent_id': parent_id}  
         try:
             collection.insert_one(document)
         except Exception as e:
@@ -171,6 +172,8 @@ def get_github_oauth_token():
 #					</tr>
 #				</thead>
 
+# <button type='button' id='rButton" + str(count) + "'>Reply</button> 
+
 # <form action="/reply" method="post" id="reply">
     # <label for="reply_text">Type your reply!</label> <br>
     # <textarea name="reply_text" id="reply_editor" required></textarea>    
@@ -181,6 +184,8 @@ def get_github_oauth_token():
                 # console.error( error );
             # } );
     # </script>
+    # <input type='hidden' value='" + id + "' name='parent_id'>
+    # <input type='hidden' value='" + parent_level + "' name='parent_level'>
     # <input type="submit" value="Reply"></input>
 # </form>
 
@@ -198,7 +203,8 @@ def format_all_posts():
         username = document['username']
         post = document['post_text']
         id = document['_id']
-        reply_form = "<button type='button' id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' required></textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='submit'></input> </form>"
+        post_level = document['post_level']
+        reply_form = "<form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' required></textarea> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='submit'> </form>"
         posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> <th> " + reply_form + " </th> </tr> </thead>")
     return posts
 
