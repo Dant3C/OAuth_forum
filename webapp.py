@@ -82,21 +82,24 @@ def authorized():
 @app.route('/submitted', methods=['POST', 'GET'])
 def submit_post():
     if 'user_data' in session:
-        username = str(session['user_data']['login'])
-        post_text = request.form['post_text']
-        now = datetime.now()
-        date_time = now.strftime("%d/%m/%Y %H:%M:%S")
-        # Datetime is a string in the format MM/DD/YEAR hh/mm/ss; 
-        # 'post_level' refers to the hierarchy of posts/replies '0' refers to a parent post, 1 would be a reply to the parent, 2 would be a reply to that reply, etc. etc.
-        # Use 'post_level' and the unique _id of each document to figure out how much to 'indent' the posts, also use the date and time to order them correctly
-        document = {'username': username, 'post_text': post_text, 'date_time': date_time, 'post_level': 0}  
-        try:
-            collection.insert_one(document)
-        except Exception as e:
-            print("Can't post, try again. error: ", e)
+        if request.form['post_text'].replace(" ", "").replace("<p>", "").replace("</p>", "").replace("&nbsp;", "") != "":
+            username = str(session['user_data']['login'])
+            post_text = request.form['post_text']
+            now = datetime.now()
+            date_time = now.strftime("%d/%m/%Y %H:%M:%S")
+            # Datetime is a string in the format MM/DD/YEAR hh/mm/ss; 
+            # 'post_level' refers to the hierarchy of posts/replies '0' refers to a parent post, 1 would be a reply to the parent, 2 would be a reply to that reply, etc. etc.
+            # Use 'post_level' and the unique _id of each document to figure out how much to 'indent' the posts, also use the date and time to order them correctly
+            document = {'username': username, 'post_text': post_text, 'date_time': date_time, 'post_level': 0}  
+            try:
+                collection.insert_one(document)
+            except Exception as e:
+                print("Can't post, try again. error: ", e)
+        else:
+            pass
     else:
         flash('You must be logged in to post.')
-    return render_template('page1.html', posts = format_all_posts())
+    return redirect(url_for('renderPage1'))
 
 @app.route('/search')
 def filter_posts():
@@ -122,31 +125,34 @@ def filter_posts():
             filtered_posts = filtered_posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
         return render_template('page1.html', posts = filtered_posts)
     else:
-        return render_template('page1.html', posts = format_all_posts())
+        return redirect(url_for('renderPage1'))
     
 
 @app.route('/clearSearch')
 def clear_filter():
-    return render_template('page1.html', posts = format_all_posts())
+    return redirect(url_for('renderPage1'))
     
 @app.route('/reply', methods=['POST', 'GET'])
 def add_reply():
-    if 'user_data' in session:
-        username = str(session['user_data']['login'])
-        # parent_level should be the post you're replying to's post_level, parent_id should be the _id of the parent post/reply
-        parent_level = request.form['post_level']
-        parent_id = request.form['parent_id']
-        reply_text = request.form['reply_text']
-        now = datetime.now()
-        date_time = now.strftime("%d/%m/%Y %H:%M:%S")
-        document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1, 'parent_id': parent_id}  
-        try:
-            collection.insert_one(document)
-        except Exception as e:
-            print("Can't post, try again. error: ", e)
+    if 'user_data' in session and 'reply_text' not in session:
+        if request.form['reply_text'].replace(" ", "").replace("<p>", "").replace("</p>", "").replace("&nbsp;", "") != "":
+            username = str(session['user_data']['login'])
+            # parent_level should be the post you're replying to's post_level, parent_id should be the _id of the parent post/reply
+            parent_level = request.form['post_level']
+            parent_id = request.form['parent_id']
+            reply_text = request.form['reply_text']
+            now = datetime.now()
+            date_time = now.strftime("%d/%m/%Y %H:%M:%S")
+            document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1, 'parent_id': parent_id}  
+            try:
+                collection.insert_one(document)
+            except Exception as e:
+                print("Can't post, try again. error: ", e)
+        else:
+            pass
     else:
         flash('You must be logged in to post.')
-    return render_template('page1.html', posts = format_all_posts())
+    return redirect(url_for('renderPage1'))
     
     
 @app.route('/page1')
@@ -204,7 +210,7 @@ def format_all_posts():
         post = document['post_text']
         id = document['_id']
         post_level = document['post_level']
-        reply_form = "<form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' required></textarea> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='submit'> </form>"
+        reply_form = "<form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' ></textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
         posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> <th> " + reply_form + " </th> </tr> </thead>")
     return posts
 
