@@ -157,7 +157,7 @@ def add_reply():
     
 @app.route('/page1')
 def renderPage1():
-    return render_template('page1.html', posts = format_all_posts())
+    return render_template('page1.html', posts = format_all_posts(), bs_posts = format_posts_boostrap())
     
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
@@ -167,16 +167,34 @@ def render_google_verification():
 def get_github_oauth_token():
     return session['github_token']
 
-#				<thead>
-#					<tr>
-#						<th>
-#							Username
-#						</th>
-#						<th>
-#							Message
-#						</th>
-#					</tr>
-#				</thead>
+
+ 
+def format_posts_boostrap():
+    username = ""
+    post = ""
+    id = ""
+    posts = ""
+    reply_form = ""
+    count = 0
+    for document in collection.find():
+        count = count + 1
+        username = document['username']
+        post = document['post_text']
+        id = document['_id']
+        post_level = document['post_level']
+        reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
+        posts = posts + Markup("<div class='d-flex p-1 flex-row bg-secondary'> " + ("<div class='p-2 bg-info'> sometext </div>" * post_level) + "<div class='p-2 bg-info' style='flex-grow: 1'> <h5> " + username + " </h5> " + post + " " + reply_form + " </div>")
+    return posts
+
+    
+# <div class='d-flex p-1 flex-row bg-secondary'>
+    # <div class='p-2 bg-info' style='flex-grow: 8'> <h5> username </h5> <p>post text</p> <form></form> </div>
+# </div>
+
+# <div class='d-flex p-1 flex-row bg-secondary'>
+    # <div class='p-2 bg-info'> </div>
+    # <div class='p-2 bg-info' style='flex-grow: 8'> <h5> username </h5> <p>post text</p> <form></form> </div>
+# </div>
 
 # <button type='button' id='rButton" + str(count) + "'>Reply</button> 
 
@@ -210,7 +228,7 @@ def format_all_posts():
         post = document['post_text']
         id = document['_id']
         post_level = document['post_level']
-        reply_form = "<form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' ></textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
+        reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
         posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> <th> " + reply_form + " </th> </tr> </thead>")
     return posts
 
