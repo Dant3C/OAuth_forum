@@ -101,28 +101,17 @@ def submit_post():
         flash('You must be logged in to post.')
     return redirect(url_for('renderPage1'))
 
-@app.route('/search')
+@app.route('/search', methods=['POST', 'GET'])
 def filter_posts():
-    query = request.args['search_query']
-    option = request.args['option']
-    username = ""
-    post = ""
-    id = ""
+    query = request.form['search_query']
+    option = request.form['option']
     filtered_posts = ""
     # If search by username is selected, search for all documents tagged with the username
     if option == "username":
-        for document in collection.find({'username': {"$regex" : query, '$options' : 'i'}}):
-            username = document['username']
-            post = document['post_text']
-            id = document['_id']
-            filtered_posts = filtered_posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+        filtered_posts = format_all_posts(".*?", query)
         return render_template('page1.html', posts = filtered_posts)
     elif option == "text":
-        for document in collection.find({"post_text" : {"$regex" : query, '$options' : 'i'}}):
-            username = document['username']
-            post = document['post_text']
-            id = document['_id']
-            filtered_posts = filtered_posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> </tr> </thead>")
+        filtered_posts = format_all_posts(query, ".*?")
         return render_template('page1.html', posts = filtered_posts)
     else:
         return redirect(url_for('renderPage1'))
@@ -168,7 +157,6 @@ def get_github_oauth_token():
     return session['github_token']
 
 
- 
 def format_posts_boostrap():
     username = ""
     post = ""
@@ -183,17 +171,17 @@ def format_posts_boostrap():
         id = document['_id']
         post_level = document['post_level']
         reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
-        posts = posts + Markup("<div class='d-flex p-1 flex-row bg-secondary'> " + ("<div class='p-2 bg-info'> sometext </div>" * post_level) + "<div class='p-2 bg-info' style='flex-grow: 1'> <h5> " + username + " </h5> " + post + " " + reply_form + " </div>")
+        posts = posts + Markup("<div class='d-flex p-1 flex-row bg-secondary'> " + ("<div class='p-2 bg-info'> sometext </div>" * post_level) + "<div class='p-2 bg-info flex-grow-1'> <h5> " + username + " </h5> " + post + " " + reply_form + " </div> </div>")
     return posts
 
     
 # <div class='d-flex p-1 flex-row bg-secondary'>
-    # <div class='p-2 bg-info' style='flex-grow: 8'> <h5> username </h5> <p>post text</p> <form></form> </div>
+    # <div class='p-2 bg-info flex-grow-1'> <h5> username </h5> <p>post text</p> <form></form> </div>
 # </div>
 
 # <div class='d-flex p-1 flex-row bg-secondary'>
     # <div class='p-2 bg-info'> </div>
-    # <div class='p-2 bg-info' style='flex-grow: 8'> <h5> username </h5> <p>post text</p> <form></form> </div>
+    # <div class='p-2 bg-info flex-grow-1'> <h5> username </h5> <p>post text</p> <form></form> </div>
 # </div>
 
 # <button type='button' id='rButton" + str(count) + "'>Reply</button> 
@@ -215,14 +203,15 @@ def format_posts_boostrap():
 
 #<script> ClassicEditor.create( document.querySelector( '#reply_editor' ) ).catch( error => { console.error( error )} ); </script>
 
-def format_all_posts():
+
+def format_all_posts(p_query=".*?", u_query=".*?"):
     username = ""
     post = ""
     id = ""
     posts = ""
     reply_form = ""
     count = 0
-    for document in collection.find():
+    for document in collection.find({"$and": [{"post_text" : {"$regex" : p_query, '$options' : 'i'}}, {'username': {"$regex" : u_query, '$options' : 'i'}}]}):
         count = count + 1
         username = document['username']
         post = document['post_text']
