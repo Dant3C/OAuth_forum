@@ -3,12 +3,34 @@
 {% block title %}Forum{% endblock %}
 
 {% block content %}
-	<h1 id="forumheader">Forum Name</h1>
+	<h1 id="forumheader">Coding Help</h1>
 
 	<p id="forump">Please be respectful and keep your posts on topic!</p>
 
+    <div id= "search">
+        <form action="/search" method="post">
+            <label for="search_query">Search for:</label> <br>
+            <input type="text" name="search_query" required></input>
+            
+            <input type="radio" id="for_username" name="option" value="username" required>
+            <label for="for_username"> Username</label>
+            <input type="radio" id="for_keyword" name="option" value="text" required>
+            <label for="for_keyword"> Keyword</label><br>
+            
+            <input type="submit" value="Search">
+        </form>
+        
+        <form action="/clearSearch">
+            <input type="submit" value="Clear Search">
+        </form>
+    
+    </div>
+    <br>
+    <br>
+    
+    <div id= "texteditor">
 	<form action="/submitted" method="post">
-		<label for="post_text">Type something!</label> <br>
+		<label for="post_text">Make a post!</label> <br>
 		<textarea name="post_text" id="editor" required>
 		</textarea>
 		
@@ -23,49 +45,24 @@
 		
 		<input type="submit"></input>
 	</form>
-	
+	</div>
 	<br>
 	
-	<form action="/search" method="post">
-		<label for="search_query">Search for:</label> <br>
-		<input type="text" name="search_query" required></input>
-		
-		<input type="radio" id="for_username" name="option" value="username" required>
-		<label for="for_username"> Username</label>
-		<input type="radio" id="for_keyword" name="option" value="text" required>
-		<label for="for_keyword"> Keyword</label><br>
-		
-		<input type="submit" value="Search">
-	</form>
-	
-	<form action="/clearSearch">
-		<input type="submit" value="Clear Search">
-	</form>
 
 	<!-- use visibility: hidden when using the flexbox layout in bootstrap to 'indent' replies -->
 	<div class="container-fluid">
 		<div class="row-fluid">
-			<h1>All posts</h1>
-			<table class="table table-bordered table-striped" id="posts">
-				<caption>Caption</caption>
+            <table class="table table-bordered table-striped" id="posts">
+				
 				{{ posts }}
-				<!-- <thead>
-					<tr>
-						<th>
-							Username
-						</th>
-						<th>
-							Message
-						</th>
-					</tr>
-				</thead> -->
+
 			</table>
 		</div>
 	</div>
 	
-	<div class="container mt-3">
+    <!-- <div class="container mt-3">
 		{{ bs_posts }}
-	</div>
+	</div> -->
 	
 	
 
