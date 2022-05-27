@@ -9,6 +9,7 @@ import pymongo
 import os
 import sys
 import pprint
+from pymongo import MongoClient
 
 app = Flask(__name__)
 
@@ -90,7 +91,7 @@ def submit_post():
             # Datetime is a string in the format MM/DD/YEAR hh/mm/ss; 
             # 'post_level' refers to the hierarchy of posts/replies '0' refers to a parent post, 1 would be a reply to the parent, 2 would be a reply to that reply, etc. etc.
             # Use 'post_level' and the unique _id of each document to figure out how much to 'indent' the posts, also use the date and time to order them correctly
-            document = {'username': username, 'post_text': post_text, 'date_time': date_time, 'post_level': 0}  
+            document = {'username': username, 'post_text': post_text, 'date_time': date_time, 'post_level': 0, 'child_posts': []}  
             try:
                 collection.insert_one(document)
             except Exception as e:
@@ -120,13 +121,15 @@ def add_reply():
             username = str(session['user_data']['login'])
             # parent_level should be the post you're replying to's post_level, parent_id should be the _id of the parent post/reply
             parent_level = request.form['post_level']
-            parent_id = request.form['parent_id']
+            parent_id = ObjectId(request.form['parent_id'])
             reply_text = request.form['reply_text']
             now = datetime.now()
             date_time = now.strftime("%d/%m/%Y %H:%M:%S")
-            document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1, 'parent_id': parent_id}  
+            document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1}
             try:
                 collection.insert_one(document)
+                reply_id = str(document['_id'])
+                collection.update_one({ '_id': parent_id }, { '$push': {'child_posts': reply_id} })
             except Exception as e:
                 print("Can't post, try again. error: ", e)
         else:
@@ -135,7 +138,18 @@ def add_reply():
         flash('You must be logged in to post.')
     return redirect(url_for('renderPage1'))
     
-
+@app.route('/delete', methods=['POST', 'GET'])
+def delete_post():
+    if 'user_data' in session:
+        if request.form['username'] == session['user_data']['login']:
+            target_id = ObjectId(request.form['post_id'])
+            collection.delete_one( { '_id': target_id } )
+        else:
+            flash('You did not post this...')
+    else:
+        pass
+    return redirect(url_for('renderPage1'))
+    
 @app.route('/page1')
 def renderPage1():
     return render_template('page1.html', posts = format_all_posts())
