@@ -52,7 +52,7 @@ def home():
 #redirect to GitHub's OAuth page and confirm callback URL
 @app.route('/login', methods=['GET', 'POST'])
 def login():   
-    return github.authorize(callback=url_for('authorized', _external=True, _scheme='http')) #set as "https" for final version
+    return github.authorize(callback=url_for('authorized', _external=True, _scheme='https')) #set as "https" for final version
 
 @app.route('/logout')
 def logout():
