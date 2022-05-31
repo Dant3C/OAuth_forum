@@ -1,5 +1,4 @@
 flask
-bson
 itsdangerous
 Jinja2
 MarkupSafe
@@ -8,4 +7,5 @@ wheel
 gunicorn
 Flask-OAuthlib
 pymongo
+dnspython
 datetime
