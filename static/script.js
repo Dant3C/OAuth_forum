@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	let length = $("#posts tr").length; //Adjust this to whatever the posts are displayed in
+	let length = $(".card").length; //Adjust this to whatever the posts are displayed in
 	for(let i = 1; i <= length; i++) {
 		$("#rButton"+i).click(function() {
 			showReply(i);

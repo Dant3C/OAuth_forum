@@ -39,7 +39,7 @@ db_name = os.environ["MONGO_DBNAME"]
 
 client = pymongo.MongoClient(connection_string)
 db = client[db_name]
-collection = db['col-1'] #1. put the name of your collection in the quotes
+collection = db['col-1'] 
 
 
 @app.context_processor
@@ -71,8 +71,6 @@ def authorized():
         try:
             session['github_token'] = (resp['access_token'], '') #save the token to prove that the user logged in
             session['user_data']=github.get('user').data
-            #pprint.pprint(vars(github['/email']))
-            #pprint.pprint(vars(github['api/2/accounts/profile/']))
             flash('You were successfully logged in as ' + session['user_data']['login'] + '.')
         except Exception as inst:
             session.clear()
@@ -106,8 +104,26 @@ def submit_post():
 def filter_posts():
     query = request.form['search_query']
     filtered_posts = ""
-    filtered_posts = format_all_posts(query)
+    filtered_posts = searched_posts(query)
     return render_template('page1.html', posts = filtered_posts)
+    
+def searched_posts(query=".*?"):
+    username = ""
+    post = ""
+    id = ""
+    posts = ""
+    reply_form = ""
+    count = 0   
+    for document in collection.find({"$or": [{"post_text" : {"$regex" : query, '$options' : 'i'}}, {'username': {"$regex" : query, '$options' : 'i'}}]}):
+        count = count + 1
+        username = document['username']
+        post = document['post_text']
+        id = document['_id']
+        date = document['date_time']
+        post_level = document['post_level']
+        reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
+        posts = posts + Markup("<div class='card m-3 level" + str(post_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + date + " </h6>  <p class='card-text'> " + post + " </p>  " + reply_form + " </div>  </div>")
+    return posts
     
 
 @app.route('/clearSearch')
@@ -125,7 +141,7 @@ def add_reply():
             reply_text = request.form['reply_text']
             now = datetime.now()
             date_time = now.strftime("%d/%m/%Y %H:%M:%S")
-            document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1}
+            document = {'username': username, 'post_text': reply_text, 'date_time': date_time, 'post_level': int(parent_level) + 1, 'child_posts': []}
             try:
                 collection.insert_one(document)
                 reply_id = str(document['_id'])
@@ -143,13 +159,13 @@ def delete_post():
     if 'user_data' in session:
         if request.form['username'] == session['user_data']['login']:
             target_id = ObjectId(request.form['post_id'])
-            collection.delete_one( { '_id': target_id } )
+            collection.update_one( { '_id': target_id }, { '$set': {'post_text': '<p><i> [Post has been deleted by user.] </i><p>'} })
         else:
             flash('You did not post this...')
     else:
         pass
     return redirect(url_for('renderPage1'))
-    
+
 @app.route('/page1')
 def renderPage1():
     return render_template('page1.html', posts = format_all_posts())
@@ -163,42 +179,55 @@ def get_github_oauth_token():
     return session['github_token']
 
     
-# <button type='button' id='rButton" + str(count) + "'>Reply</button> 
 
-# <form action="/reply" method="post" id="reply">
-    # <label for="reply_text">Type your reply!</label> <br>
-    # <textarea name="reply_text" id="reply_editor" required></textarea>    
-    # <script>
-        # ClassicEditor
-            # .create( document.querySelector( '#reply_editor' ) )
-            # .catch( error => {
-                # console.error( error );
-            # } );
-    # </script>
-    # <input type='hidden' value='" + id + "' name='parent_id'>
-    # <input type='hidden' value='" + parent_level + "' name='parent_level'>
-    # <input type="submit" value="Reply"></input>
-# </form>
-
-#<script> ClassicEditor.create( document.querySelector( '#reply_editor' ) ).catch( error => { console.error( error )} ); </script>
-
+count = 0
+posts = ""
 
 def format_all_posts(query=".*?"):
     username = ""
     post = ""
     id = ""
+    global count
+    count = 0
+    global posts
     posts = ""
     reply_form = ""
-    count = 0   
     for document in collection.find({"$or": [{"post_text" : {"$regex" : query, '$options' : 'i'}}, {'username': {"$regex" : query, '$options' : 'i'}}]}):
-        count = count + 1
-        username = document['username']
-        post = document['post_text']
-        id = document['_id']
-        post_level = document['post_level']
-        reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
-        posts = posts + Markup("<thead> <tr> <th> " + username + " </th> <th> " + post + " </th> <th> " + reply_form + " </th> </tr> </thead>")
+        if document['post_level'] == 0:
+            count  = count + 1
+            username = document['username']
+            post = document['post_text']
+            id = document['_id']
+            date = document['date_time']
+            post_level = document['post_level']
+            delete = "<form action='/delete' method='post' id='delete" + str(count) + "'>  <input type='submit' value='Delete'>  <input type='hidden' value='" + str(id) + "' name='post_id'>  <input type='hidden' value='" + username + "' name='username'>  </form>"
+            reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
+            posts = posts + Markup("<div class='card m-3 level" + str(post_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + date + " </h6>  <p class='card-text'> " + post + " </p>  " + reply_form + delete + " </div>  </div>")
+            get_children(document)
+        else:
+            pass
     return posts
+
+def get_children(doc):
+    if doc['child_posts']:
+        for c in doc['child_posts']:
+            global count
+            count = count + 1
+            child_id = ObjectId(c)
+            child_doc = collection.find_one( {'_id': child_id} )
+            child_username = child_doc['username']
+            child_post = child_doc['post_text']
+            child_date = child_doc['date_time']
+            child_level = child_doc['post_level']
+            delete = "<form action='/delete' method='post' id='delete" + str(count) + "'>  <input type='submit' value='Delete'>  <input type='hidden' value='" + str(child_id) + "' name='post_id'>  <input type='hidden' value='" + child_username + "' name='username'>  </form>"
+            reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + child_username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(child_id) + "' name='parent_id'> <input type='hidden' value='" + str(child_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
+            global posts
+            posts = posts + Markup("<div class='card m-3 level" + str(child_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + child_username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + child_date + " </h6>  <p class='card-text'> " + child_post + " </p>  " + reply_form + delete + " </div>  </div>")
+            get_children(child_doc)
+    else:
+        pass
+    return posts
+
 
 if __name__ == '__main__':
     app.run()

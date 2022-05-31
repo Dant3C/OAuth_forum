@@ -7,10 +7,11 @@
 
 	<p id="forump">Please be respectful and keep your posts on topic!</p>
 
-    <div id="search">
+    <div id= "search">
         <form action="/search" method="post">
             <label for="search_query">Search for:</label> <br>
             <input type="text" name="search_query" required></input>
+            
             <input type="submit" value="Search">
         </form>
         
@@ -42,8 +43,8 @@
 	</div>
 	<br>
 	
-	{{ posts }}
-	
-	<br><br><br><br><br><br><br><br>
+	<div class="container h-100">
+		{{ posts }}
+	</div>
 
 {% endblock %}
