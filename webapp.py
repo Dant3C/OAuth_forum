@@ -13,8 +13,7 @@ from pymongo import MongoClient
 
 app = Flask(__name__)
 
-app.debug = True #Change this to False for production
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #Remove once done debugging
+app.debug = False #Change this to False for production
 
 app.secret_key = os.environ['SECRET_KEY'] #used to sign session cookies
 oauth = OAuth(app)
