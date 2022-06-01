@@ -106,6 +106,7 @@ def filter_posts():
     filtered_posts = searched_posts(query)
     return render_template('page1.html', posts = filtered_posts)
     
+# Searched posts appear in no particular order (does not use the same recursive method as format_all_posts)
 def searched_posts(query=".*?"):
     username = ""
     post = ""
@@ -124,7 +125,6 @@ def searched_posts(query=".*?"):
         posts = posts + Markup("<div class='card m-3 level" + str(post_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + date + " </h6>  <p class='card-text'> " + post + " </p>  " + reply_form + " </div>  </div>")
     return posts
     
-
 @app.route('/clearSearch')
 def clear_filter():
     return redirect(url_for('renderPage1'))
@@ -153,21 +153,29 @@ def add_reply():
         flash('You must be logged in to post.')
     return redirect(url_for('renderPage1'))
     
+# Delete function replaces post text without actually deleting the document, in order to prevent entire thread loss in the case a parent post is deleted
 @app.route('/delete', methods=['POST', 'GET'])
 def delete_post():
     if 'user_data' in session:
         if request.form['username'] == session['user_data']['login']:
             target_id = ObjectId(request.form['post_id'])
-            collection.update_one( { '_id': target_id }, { '$set': {'post_text': '<p><i> [Post has been deleted by user.] </i><p>'} })
+            collection.update_one( { '_id': target_id }, { '$set': {'post_text': '<p><i> [Post has been deleted by user.] </i><p>', 'username': '<p> [removed] </p>', 'date_time': '<p> [removed] </p>'}} )
         else:
             flash('You did not post this...')
     else:
         pass
     return redirect(url_for('renderPage1'))
 
-@app.route('/page1')
+@app.route('/forum')
 def renderPage1():
-    return render_template('page1.html', posts = format_all_posts())
+    return render_template('page1.html', posts = format_all_posts(), loggedIn = is_logged_in())
+
+# Check if the user is logged in, used to display the post form or not on "page1"
+def is_logged_in():
+    if 'user_data' in session:
+        return True
+    else:
+        return False
     
 @app.route('/googleb4c3aeedcc2dd103.html')
 def render_google_verification():
@@ -176,9 +184,8 @@ def render_google_verification():
 @github.tokengetter
 def get_github_oauth_token():
     return session['github_token']
-
-    
-
+  
+# Global count and post variables which need to be modified in two functions
 count = 0
 posts = ""
 
@@ -201,12 +208,21 @@ def format_all_posts(query=".*?"):
             post_level = document['post_level']
             delete = "<form action='/delete' method='post' id='delete" + str(count) + "'>  <input type='submit' value='Delete'>  <input type='hidden' value='" + str(id) + "' name='post_id'>  <input type='hidden' value='" + username + "' name='username'>  </form>"
             reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(id) + "' name='parent_id'> <input type='hidden' value='" + str(post_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
-            posts = posts + Markup("<div class='card m-3 level" + str(post_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + date + " </h6>  <p class='card-text'> " + post + " </p>  " + reply_form + delete + " </div>  </div>")
+            posts = posts + Markup("<div class='card m-3 level" + str(post_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + date + " </h6>  <p class='card-text'> " + post + " </p>  ") 
+            if 'user_data' in session:
+                posts = posts + Markup(reply_form)
+                if username == str(session['user_data']['login']): 
+                    posts = posts + Markup(delete + " </div>  </div>") # Add the delete button if the post matches the user (only allow the user to delete their own posts)
+                else:
+                    posts = posts + Markup(" </div>  </div>")
+            else:
+                posts = posts + Markup(" </div>  </div>")
             get_children(document)
         else:
             pass
     return posts
 
+# Recursive get_children function to check each post's child array and then that child's child array etc. etc.
 def get_children(doc):
     if doc['child_posts']:
         for c in doc['child_posts']:
@@ -221,7 +237,15 @@ def get_children(doc):
             delete = "<form action='/delete' method='post' id='delete" + str(count) + "'>  <input type='submit' value='Delete'>  <input type='hidden' value='" + str(child_id) + "' name='post_id'>  <input type='hidden' value='" + child_username + "' name='username'>  </form>"
             reply_form = "<button id='rButton" + str(count) + "'>Reply</button> <form action='/reply' method='post' id='reply" + str(count) + "' class='replyForm'> <label for='reply_text'>Type your reply!</label> <br> <textarea name='reply_text' id='reply_editor" + str(count) + "' > " + "@" + child_username + " </textarea> <script> ClassicEditor.create( document.querySelector( '#reply_editor" + str(count) + "' ) ).catch( error => { console.error( error )} ); </script> <input type='hidden' value='" + str(child_id) + "' name='parent_id'> <input type='hidden' value='" + str(child_level) + "' name='post_level'> <input type='submit' value ='Submit'> </form>"
             global posts
-            posts = posts + Markup("<div class='card m-3 level" + str(child_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + child_username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + child_date + " </h6>  <p class='card-text'> " + child_post + " </p>  " + reply_form + delete + " </div>  </div>")
+            posts = posts + Markup("<div class='card m-3 level" + str(child_level) + "' style='max-width: 100%;'>  <div class='card-body'>  <h4 class='card-title'> <strong>" + child_username + "</strong> </h4>  <h6 class='card-subtitle mb-2 text-muted'> " + child_date + " </h6>  <p class='card-text'> " + child_post + " </p>  ")
+            if 'user_data' in session:
+                posts = posts + Markup(reply_form)
+                if child_username == str(session['user_data']['login']):
+                    posts = posts + Markup(delete + " </div>  </div>") # Add the delete button if the post matches the user (only allow the user to delete their own posts)
+                else:
+                    posts = posts + Markup(" </div>  </div>")
+            else:
+                posts = posts + Markup(" </div>  </div>")
             get_children(child_doc)
     else:
         pass

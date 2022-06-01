@@ -22,24 +22,27 @@
     <br>
     <br>
     
-    <div id= "texteditor">
-	<form action="/submitted" method="post">
-		<label for="post_text">Make a post!</label> <br>
-		<textarea name="post_text" id="editor" required>
-		</textarea>
+	{% if loggedIn %} 
+		<div id= "texteditor">
+		<form action="/submitted" method="post">
+			<label for="post_text">Make a post!</label> <br>
+			<textarea name="post_text" id="editor" required>
+			</textarea>
+			
+			<!-- Text editor that adds basic editing options : bold, italicize, embed link, bulleted/numbered lists, insert image(remove probably), quote, undo/redo buttons -->
+			<script>
+				ClassicEditor
+					.create( document.querySelector( '#editor' ) )
+					.catch( error => {
+						console.error( error );
+					} );
+			</script>
+			
+			<input type="submit"></input>
+		</form>
+		</div>
+	{% endif %}
 		
-		<!-- Text editor that adds basic editing options : bold, italicize, embed link, bulleted/numbered lists, insert image(remove probably), quote, undo/redo buttons -->
-		<script>
-			ClassicEditor
-				.create( document.querySelector( '#editor' ) )
-				.catch( error => {
-					console.error( error );
-				} );
-		</script>
-		
-		<input type="submit"></input>
-	</form>
-	</div>
 	<br>
 	
 	{{ posts }}
